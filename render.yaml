@@ -1,9 +1,0 @@
-services:
-  - type: web
-    name: tiksave
-    runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: python server_render.py
-    envVars:
-      - key: PORT
-        value: 10000
