@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>TikSave Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070810;--s1:#0c0e1a;--s2:#111422;--s3:#181c2e;
+  --b1:rgba(255,255,255,.07);--b2:rgba(255,255,255,.13);
+  --tk:#fe2c55;--tk2:#ff6b35;--drop:#0061ff;--drop2:#60efff;
+  --ok:#00e5a0;--warn:#ffc947;--err:#ff4757;
+  --text:#eef0ff;--muted:#5a607a;--muted2:#8891aa;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.4;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");}
+.blob{position:fixed;border-radius:50%;filter:blur(130px);pointer-events:none;z-index:0;}
+.b1{width:550px;height:550px;background:rgba(254,44,85,.065);top:-120px;right:-120px;}
+.b2{width:450px;height:450px;background:rgba(0,97,255,.055);bottom:-100px;left:-100px;}
+.wrap{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:32px 18px 80px;}
+
+/* nav */
+nav{display:flex;align-items:center;justify-content:space-between;padding-bottom:22px;margin-bottom:44px;border-bottom:1px solid var(--b1);}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--tk),var(--tk2));display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 22px rgba(254,44,85,.3);}
+.logo-name{font-size:1.3rem;font-weight:900;letter-spacing:-.5px;background:linear-gradient(120deg,var(--tk),var(--tk2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.logo-name sup{font-size:.55rem;font-weight:700;-webkit-text-fill-color:var(--muted2);color:var(--muted2);text-transform:uppercase;margin-right:3px;}
+.nav-btns{display:flex;gap:8px;}
+.btn-nav{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:11px;background:var(--s2);border:1px solid var(--b2);color:var(--muted2);font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;transition:all .2s;position:relative;}
+.btn-nav:hover{background:var(--s3);color:var(--text);}
+.cfg-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);position:absolute;top:7px;left:7px;transition:background .3s;}
+.cfg-dot.ready{background:var(--ok);box-shadow:0 0 6px var(--ok);}
+.cfg-dot.partial{background:var(--warn);}
+
+/* hero */
+.hero{text-align:center;margin-bottom:36px;animation:fd .5s ease;}
+.hero h1{font-size:clamp(1.6rem,4vw,2.6rem);font-weight:900;line-height:1.22;margin-bottom:10px;}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,var(--tk),var(--tk2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero p{color:var(--muted2);font-size:.9rem;line-height:1.75;}
+.chips{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-top:14px;}
+.chip{padding:4px 12px;border-radius:20px;font-size:.72rem;border:1px solid var(--b2);background:var(--s2);color:var(--muted2);}
+.chip b{color:var(--ok);}
+
+/* notice */
+.notice{display:none;background:rgba(255,201,71,.06);border:1px solid rgba(255,201,71,.22);border-radius:14px;padding:12px 16px;font-size:.8rem;color:var(--muted2);margin-bottom:14px;align-items:center;gap:10px;}
+.notice.show{display:flex;}
+.notice strong{color:var(--warn);}
+
+/* card */
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:20px;padding:22px;margin-bottom:12px;transition:border-color .3s;}
+.card:hover{border-color:var(--b2);}
+.card-title{font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+
+/* inputs */
+.row{display:flex;gap:10px;flex-wrap:wrap;}
+.field{flex:1;min-width:200px;background:var(--s2);border:1px solid var(--b2);color:var(--text);padding:12px 14px;border-radius:12px;font-size:.88rem;font-family:'Cairo',sans-serif;outline:none;transition:border-color .2s,box-shadow .2s;direction:ltr;}
+.field:focus{border-color:var(--tk);box-shadow:0 0 0 3px rgba(254,44,85,.12);}
+.field::placeholder{color:var(--muted);}
+.field.err{border-color:var(--tk)!important;animation:shake .3s ease;}
+.field-full{width:100%;min-width:unset;}
+
+/* buttons */
+.btn{padding:11px 20px;border-radius:12px;font-weight:700;font-size:.86rem;cursor:pointer;border:none;font-family:'Cairo',sans-serif;transition:all .2s;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;}
+.btn-main{background:linear-gradient(135deg,var(--tk),#c01c3e);color:#fff;box-shadow:0 4px 22px rgba(254,44,85,.35);}
+.btn-main:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 28px rgba(254,44,85,.5);}
+.btn-main:disabled{opacity:.4;cursor:not-allowed;transform:none!important;}
+.btn-ghost{background:transparent;color:var(--muted2);border:1px solid var(--b2);}
+.btn-ghost:hover{color:var(--text);border-color:rgba(255,255,255,.25);}
+.btn-sm{padding:8px 14px;font-size:.78rem;border-radius:10px;}
+.btn-full{width:100%;justify-content:center;}
+
+/* overlay base */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:20px 14px;overflow-y:auto;}
+.overlay.open{display:flex;animation:fadeIn .2s ease;}
+.panel{background:var(--s1);border:1px solid var(--b2);border-radius:22px;padding:28px;width:min(580px,100%);position:relative;animation:slideUp .25s ease;margin:auto;}
+.panel-close{position:absolute;top:15px;left:15px;background:var(--s3);border:1px solid var(--b1);border-radius:8px;width:30px;height:30px;cursor:pointer;color:var(--muted2);display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.panel-close:hover{color:var(--text);}
+.panel h2{font-size:1.05rem;font-weight:900;margin-bottom:3px;}
+.panel .sub{font-size:.76rem;color:var(--muted2);margin-bottom:20px;line-height:1.6;}
+
+/* accordion */
+.acc{border:1px solid var(--b1);border-radius:13px;margin-bottom:8px;overflow:hidden;}
+.acc-head{display:flex;align-items:center;justify-content:space-between;padding:12px 15px;cursor:pointer;background:var(--s2);user-select:none;transition:background .2s;}
+.acc-head:hover{background:var(--s3);}
+.acc-hl{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.84rem;}
+.badge{font-size:.65rem;padding:2px 8px;border-radius:20px;font-weight:700;}
+.badge.ok{background:rgba(0,229,160,.12);color:var(--ok);border:1px solid rgba(0,229,160,.2);}
+.badge.bad{background:rgba(254,44,85,.12);color:var(--tk);border:1px solid rgba(254,44,85,.25);}
+.badge.na{background:rgba(90,96,122,.15);color:var(--muted2);border:1px solid var(--b1);}
+.acc-arr{width:20px;height:20px;background:var(--s3);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--muted2);transition:transform .25s;}
+.acc.open .acc-arr{transform:rotate(180deg);}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .3s;}
+.acc.open .acc-body{max-height:800px;padding:15px 15px 18px;}
+
+/* form */
+.fg{margin-bottom:13px;}
+.flabel{font-size:.73rem;font-weight:700;color:var(--muted2);margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;}
+.flabel a{color:var(--drop);font-size:.69rem;text-decoration:none;}
+.flabel a:hover{text-decoration:underline;}
+.hint{font-size:.7rem;color:var(--muted);margin-top:5px;padding:7px 11px;background:rgba(255,255,255,.03);border-radius:8px;border-right:3px solid var(--b2);line-height:1.55;}
+.hint strong{color:var(--muted2);}
+.hint a{color:var(--drop);text-decoration:none;}
+.hint a:hover{text-decoration:underline;}
+.hint code{background:rgba(255,255,255,.07);padding:1px 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:.85em;}
+
+/* textarea keys */
+.keys-area{width:100%;background:var(--s3);border:1px solid var(--b2);color:var(--text);padding:9px 11px;border-radius:10px;font-size:.76rem;font-family:'JetBrains Mono',monospace;resize:vertical;min-height:60px;outline:none;direction:ltr;transition:border-color .2s;}
+.keys-area:focus{border-color:var(--tk);}
+
+/* slider */
+.slider-wrap{display:flex;align-items:center;gap:12px;}
+.slider{flex:1;-webkit-appearance:none;height:5px;border-radius:99px;outline:none;background:var(--s3);cursor:pointer;}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--tk);border:2px solid rgba(255,255,255,.1);cursor:pointer;}
+.slider-val{font-family:'JetBrains Mono',monospace;font-size:.9rem;color:var(--tk);font-weight:700;min-width:44px;text-align:center;}
+
+/* oauth ui */
+.oauth-msg{display:none;font-size:.76rem;padding:8px 12px;border-radius:9px;background:rgba(255,255,255,.04);margin-bottom:8px;line-height:1.5;}
+.oauth-msg.wait{color:var(--warn);}
+.oauth-msg.ok{color:var(--ok);}
+.oauth-msg.err{color:var(--err);}
+.manual-wrap{display:none;margin-bottom:12px;}
+.manual-wrap .hint{margin-bottom:8px;}
+
+.save-row{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid var(--b1);}
+
+/* progress */
+.prog-wrap{display:none;}
+.prog-wrap.show{display:block;animation:fu .3s ease;}
+.prog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.prog-lbl{font-size:.86rem;font-weight:700;display:flex;align-items:center;gap:8px;}
+.spinner{width:14px;height:14px;border-radius:50%;border:2px solid var(--b2);border-top-color:var(--tk);animation:spin .75s linear infinite;display:inline-block;flex-shrink:0;}
+.prog-frac{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--drop2);}
+.bar{background:var(--s3);border-radius:99px;height:6px;overflow:hidden;margin-bottom:14px;}
+.bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--tk),var(--tk2));transition:width .5s ease;width:0%;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
+.stat{background:var(--s2);border-radius:11px;padding:10px;text-align:center;}
+.stat-n{font-family:'JetBrains Mono',monospace;font-size:1.25rem;font-weight:700;}
+.stat-n.blue{color:var(--drop2);}.stat-n.green{color:var(--ok);}.stat-n.red{color:var(--tk);}.stat-n.warn{color:var(--warn);}
+.stat-l{font-size:.65rem;color:var(--muted2);margin-top:1px;}
+.src-badge{font-size:.68rem;padding:2px 7px;border-radius:5px;font-weight:700;}
+.src-rapid{background:rgba(0,97,255,.15);color:var(--drop2);}
+.src-apify{background:rgba(0,229,160,.12);color:var(--ok);}
+.src-scraper{background:rgba(255,201,71,.12);color:var(--warn);}
+.src-bright{background:rgba(162,89,255,.15);color:#a259ff;}
+.cur{font-size:.72rem;color:var(--muted2);padding:7px 11px;background:var(--s2);border-radius:9px;display:none;font-family:'JetBrains Mono',monospace;direction:ltr;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cur.show{display:block;}
+
+/* log */
+.log-wrap{display:none;}
+.log-wrap.show{display:block;animation:fu .3s ease;}
+.log-head{display:flex;justify-content:space-between;align-items:center;padding:9px 15px;border-bottom:1px solid var(--b1);font-size:.7rem;color:var(--muted);}
+.log-body{padding:12px 15px;font-family:'JetBrains Mono',monospace;font-size:.68rem;line-height:1.9;max-height:220px;overflow-y:auto;color:var(--muted2);direction:ltr;text-align:left;}
+.log-body::-webkit-scrollbar{width:3px;}
+.log-body::-webkit-scrollbar-thumb{background:var(--s3);}
+.ll.s{color:var(--ok);}.ll.e{color:var(--err);}.ll.i{color:var(--drop2);}.ll.w{color:var(--warn);}
+
+/* done */
+.done{display:none;background:rgba(0,229,160,.05);border:1px solid rgba(0,229,160,.2);border-radius:14px;padding:18px 22px;align-items:center;gap:14px;margin-top:12px;}
+.done.show{display:flex;animation:fu .4s ease;}
+.done-icon{font-size:1.9rem;flex-shrink:0;}
+.done-text h3{font-size:.95rem;color:var(--ok);margin-bottom:2px;}
+.done-text p{font-size:.76rem;color:var(--muted2);}
+
+/* test panel */
+.test-panel{width:min(620px,100%);}
+.res-sec{margin-bottom:14px;}
+.res-title{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
+.res-item{display:flex;align-items:center;gap:11px;background:var(--s2);border-radius:11px;padding:11px 13px;margin-bottom:5px;border:1px solid var(--b1);transition:border-color .3s;}
+.res-item.ok{border-color:rgba(0,229,160,.25);background:rgba(0,229,160,.04);}
+.res-item.fail{border-color:rgba(255,71,87,.2);background:rgba(255,71,87,.03);}
+.res-item.testing{border-color:rgba(255,201,71,.18);}
+.res-icon{font-size:1.1rem;flex-shrink:0;width:26px;text-align:center;}
+.res-body{flex:1;min-width:0;}
+.res-name{font-size:.78rem;font-weight:700;margin-bottom:2px;}
+.res-status{font-size:.72rem;color:var(--muted2);}
+.res-detail{font-size:.68rem;color:var(--muted);margin-top:2px;font-family:'JetBrains Mono',monospace;}
+.res-ms{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--muted);flex-shrink:0;}
+.test-sum{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.sum-box{flex:1;min-width:70px;background:var(--s2);border-radius:10px;padding:9px;text-align:center;}
+.sum-n{font-family:'JetBrains Mono',monospace;font-size:1.2rem;font-weight:700;}
+.sum-l{font-size:.65rem;color:var(--muted2);margin-top:1px;}
+.sug{background:rgba(255,201,71,.06);border:1px solid rgba(255,201,71,.2);border-radius:11px;padding:12px 15px;font-size:.76rem;line-height:1.75;color:var(--muted2);margin-top:12px;}
+.sug.ok-all{background:rgba(0,229,160,.06);border-color:rgba(0,229,160,.2);}
+.sug strong{color:var(--warn);}
+.sug.ok-all strong{color:var(--ok);}
+
+@keyframes fd{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+/* ── storage widget ── */
+.storage-card{
+  background:var(--s1);border:1px solid var(--b1);
+  border-radius:20px;padding:22px 24px;
+  margin-bottom:14px;animation:fu .4s ease .2s both;
+  transition:border-color .3s;
+}
+.storage-card:hover{border-color:var(--b2);}
+.stor-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.stor-title{font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:7px;}
+.stor-refresh{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:4px;border-radius:6px;transition:all .2s;line-height:1;}
+.stor-refresh:hover{color:var(--text);background:var(--s2);}
+.stor-refresh.spinning{animation:spin .7s linear infinite;}
+.stor-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.stor-box{background:var(--s2);border-radius:12px;padding:12px 14px;}
+.stor-lbl{font-size:.68rem;color:var(--muted2);margin-bottom:4px;}
+.stor-val{font-family:'JetBrains Mono',monospace;font-size:1.05rem;font-weight:700;color:var(--text);}
+.stor-val.green{color:var(--ok);}
+.stor-val.blue{color:var(--drop2);}
+.stor-val.warn{color:var(--warn);}
+.stor-bar-wrap{margin-bottom:12px;}
+.stor-bar-labels{display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted2);margin-bottom:5px;font-family:'JetBrains Mono',monospace;}
+.stor-bar-track{background:var(--s3);border-radius:99px;height:8px;overflow:hidden;}
+.stor-bar-fill{height:100%;border-radius:99px;transition:width .8s ease;background:linear-gradient(90deg,var(--drop),var(--drop2));}
+.stor-bar-fill.warn{background:linear-gradient(90deg,var(--warn),#ff9a3c);}
+.stor-bar-fill.danger{background:linear-gradient(90deg,var(--tk),var(--tk2));}
+.stor-folder{display:flex;align-items:center;gap:8px;background:var(--s2);border-radius:10px;padding:10px 14px;font-size:.78rem;}
+.stor-folder-icon{font-size:1rem;flex-shrink:0;}
+.stor-folder-info{flex:1;}
+.stor-folder-path{font-family:'JetBrains Mono',monospace;color:var(--drop2);font-size:.75rem;}
+.stor-folder-count{color:var(--muted2);font-size:.7rem;margin-top:2px;}
+.stor-empty{color:var(--muted);font-size:.82rem;text-align:center;padding:12px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.stor-loading{display:flex;align-items:center;justify-content:center;gap:8px;color:var(--muted2);font-size:.82rem;padding:8px;}
+
+/* ── dropbox accounts ── */
+.drop-account{
+  background:var(--s2);border:1px solid var(--b1);
+  border-radius:14px;padding:14px;margin-bottom:10px;
+  position:relative;transition:border-color .2s;
+}
+.drop-account:hover{border-color:var(--b2);}
+.drop-account-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;
+}
+.drop-account-title{
+  font-size:.78rem;font-weight:800;color:var(--muted2);
+  display:flex;align-items:center;gap:7px;
+}
+.drop-account-badge{
+  font-size:.65rem;padding:2px 7px;border-radius:12px;font-weight:700;
+}
+.drop-account-badge.ok{background:rgba(0,229,160,.12);color:var(--ok);border:1px solid rgba(0,229,160,.2);}
+.drop-account-badge.na{background:rgba(90,96,122,.15);color:var(--muted2);border:1px solid var(--b1);}
+.drop-account-badge.active{background:rgba(0,97,255,.15);color:var(--drop2);border:1px solid rgba(0,97,255,.25);}
+.drop-account-badge.full{background:rgba(255,71,87,.12);color:var(--tk);border:1px solid rgba(255,71,87,.2);}
+.drop-remove{
+  background:none;border:none;color:var(--muted);cursor:pointer;
+  font-size:.85rem;padding:3px 7px;border-radius:6px;
+  transition:all .2s;
+}
+.drop-remove:hover{color:var(--tk);background:rgba(255,71,87,.1);}
+.drop-fields{display:flex;flex-direction:column;gap:8px;}
+.drop-field-row{display:flex;flex-direction:column;gap:3px;}
+.drop-field-lbl{font-size:.7rem;color:var(--muted);font-weight:600;}
+.drop-oauth-row{display:flex;gap:7px;margin-top:4px;}
+.drop-oauth-btn{
+  flex:1;padding:8px 12px;border-radius:9px;font-size:.75rem;font-weight:700;
+  cursor:pointer;border:1px solid var(--b2);background:var(--s3);
+  color:var(--muted2);font-family:'Cairo',sans-serif;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+}
+.drop-oauth-btn:hover{color:var(--text);border-color:rgba(255,255,255,.25);}
+.drop-oauth-msg{font-size:.72rem;margin-top:5px;padding:6px 10px;border-radius:7px;display:none;}
+.drop-oauth-msg.show{display:block;}
+.drop-oauth-msg.ok{background:rgba(0,229,160,.08);color:var(--ok);}
+.drop-oauth-msg.err{background:rgba(255,71,87,.08);color:var(--tk);}
+.drop-oauth-msg.wait{background:rgba(255,201,71,.08);color:var(--warn);}
+.drop-manual-wrap{margin-top:7px;display:none;}
+.drop-manual-wrap.show{display:block;}
+.drop-space-bar{margin-top:10px;}
+.drop-space-labels{display:flex;justify-content:space-between;font-size:.68rem;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-bottom:3px;}
+.drop-space-track{background:var(--s3);border-radius:99px;height:5px;overflow:hidden;}
+.drop-space-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--drop),var(--drop2));transition:width .6s ease;}
+.drop-space-fill.warn{background:linear-gradient(90deg,var(--warn),#ff9a3c);}
+.drop-space-fill.danger{background:linear-gradient(90deg,var(--tk),var(--tk2));}
+
+/* ── cloud sync ── */
+.cloud-bar{
+  display:flex;align-items:center;gap:8px;
+  background:var(--s2);border:1px solid var(--b1);
+  border-radius:12px;padding:10px 14px;
+  margin-bottom:14px;flex-wrap:wrap;
+}
+.cloud-bar-lbl{font-size:.72rem;color:var(--muted2);font-weight:600;flex-shrink:0;}
+.cloud-btn{
+  padding:7px 13px;border-radius:8px;font-size:.75rem;font-weight:700;
+  cursor:pointer;border:none;font-family:'Cairo',sans-serif;
+  transition:all .2s;display:flex;align-items:center;gap:5px;
+}
+.cloud-save{background:linear-gradient(135deg,var(--drop),#004bb5);color:#fff;}
+.cloud-save:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,97,255,.35);}
+.cloud-load{background:var(--s3);border:1px solid var(--b2);color:var(--muted2);}
+.cloud-load:hover{color:var(--text);border-color:rgba(255,255,255,.25);}
+.cloud-msg{
+  font-size:.72rem;padding:5px 10px;border-radius:7px;
+  display:none;width:100%;margin-top:2px;
+}
+.cloud-msg.show{display:block;}
+.cloud-msg.ok{background:rgba(0,229,160,.08);color:var(--ok);}
+.cloud-msg.err{background:rgba(255,71,87,.08);color:var(--tk);}
+.cloud-msg.wait{background:rgba(255,201,71,.08);color:var(--warn);}
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div>
+
+<!-- ══ SETTINGS ══ -->
+<div class="overlay" id="oCfg" onclick="if(event.target===this)closeCfg()">
+<div class="panel">
+  <button class="panel-close" onclick="closeCfg()">✕</button>
+  <h2>⚙️ الإعدادات</h2>
+  <p class="sub">المفاتيح محفوظة في المتصفح محلياً على جهازك فقط.</p>
+
+  <!-- Export / Import Bar -->
+  <div class="cloud-bar">
+    <div class="cloud-bar-lbl">💾 الإعدادات:</div>
+    <button class="cloud-btn cloud-save" onclick="exportSettings()">📤 تصدير JSON</button>
+    <button class="cloud-btn cloud-load" onclick="importSettings()">📥 استيراد JSON</button>
+    <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="onImportFile(event)">
+    <div class="cloud-msg" id="cloudMsg"></div>
+  </div>
+
+  <!-- RapidAPI -->
+  <div class="acc open" id="aRapid">
+    <div class="acc-head" onclick="tog('aRapid')">
+      <div class="acc-hl">🔑 مفاتيح RapidAPI <span class="badge na" id="bRapid">غير محفوظ</span></div>
+      <div class="acc-arr">▾</div>
+    </div>
+    <div class="acc-body">
+      <div class="fg">
+        <div class="flabel">المفتاح الرئيسي <a href="https://rapidapi.com/tikhub-tikhub-default/api/tiktok-video-no-watermark2" target="_blank">احصل عليه ↗</a></div>
+        <input class="field field-full" type="password" id="cfg_main" placeholder="acac63fc…cff4">
+        <div class="hint">RapidAPI → My Apps → Default App → X-RapidAPI-Key</div>
+      </div>
+      <div class="fg">
+        <div class="flabel">مفاتيح إضافية (كل مفتاح في سطر)</div>
+        <textarea class="keys-area" id="cfg_extra" placeholder="key2&#10;key3&#10;key4" rows="3"></textarea>
+        <div class="hint">كل مفتاح = <strong>500 req/شهر مجاناً</strong> — 3 providers × المفاتيح</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Apify -->
+  <div class="acc" id="aApify">
+    <div class="acc-head" onclick="tog('aApify')">
+      <div class="acc-hl">🕷️ Apify Tokens <small style="font-weight:400;color:var(--muted);font-size:.66rem;">fallback أول</small> <span class="badge na" id="bApify">اختياري</span></div>
+      <div class="acc-arr">▾</div>
+    </div>
+    <div class="acc-body">
+      <div class="fg">
+        <div class="flabel">Tokens (كل token في سطر) <a href="https://console.apify.com/settings/integrations" target="_blank">احصل عليه ↗</a></div>
+        <textarea class="keys-area" id="cfg_apify" placeholder="apify_api_token1&#10;apify_api_token2" rows="3"></textarea>
+        <div class="hint">apify.com مجاناً ← Settings ← Integrations ← API Token<br><strong>$5 credit/شهر مجاناً يتجدد</strong> — كل إيميل = token منفصل</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ScraperAPI -->
+  <div class="acc" id="aScraper">
+    <div class="acc-head" onclick="tog('aScraper')">
+      <div class="acc-hl">🔧 ScraperAPI Keys <small style="font-weight:400;color:var(--muted);font-size:.66rem;">fallback ثاني</small> <span class="badge na" id="bScraper">اختياري</span></div>
+      <div class="acc-arr">▾</div>
+    </div>
+    <div class="acc-body">
+      <div class="fg">
+        <div class="flabel">Keys (كل key في سطر) <a href="https://www.scraperapi.com/" target="_blank">احصل عليه ↗</a></div>
+        <textarea class="keys-area" id="cfg_scraper" placeholder="scraperapi_key1&#10;scraperapi_key2" rows="3"></textarea>
+        <div class="hint">scraperapi.com مجاناً ← Dashboard ← API Key<br><strong>1,000 req/شهر مجاناً يتجدد</strong> — كل إيميل = key منفصل</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bright Data -->
+  <div class="acc" id="aBD">
+    <div class="acc-head" onclick="tog('aBD')">
+      <div class="acc-hl">⚡ Bright Data Tokens <small style="font-weight:400;color:var(--muted);font-size:.66rem;">fallback ثالث</small> <span class="badge na" id="bBD">اختياري</span></div>
+      <div class="acc-arr">▾</div>
+    </div>
+    <div class="acc-body">
+      <div class="fg">
+        <div class="flabel">Tokens (كل token في سطر) <a href="https://brightdata.com/" target="_blank">احصل عليه ↗</a></div>
+        <textarea class="keys-area" id="cfg_bd" placeholder="token1&#10;token2" rows="2"></textarea>
+        <div class="hint">brightdata.com ← سجل مجاناً ← API section ← انسخ token<br><strong>Trial مجاني</strong> — fallback ثالث بعد ScraperAPI</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dropbox -->
+  <div class="acc open" id="aDrop">
+    <div class="acc-head" onclick="tog('aDrop')">
+      <div class="acc-hl">📦 Dropbox Accounts <span class="badge na" id="bDrop">غير متصل</span></div>
+      <div class="acc-arr">▾</div>
+    </div>
+    <div class="acc-body">
+
+      <!-- Accounts list -->
+      <div id="dropAccountsList"></div>
+
+      <!-- Add account button -->
+      <button class="btn btn-ghost btn-sm btn-full" style="margin-bottom:14px" onclick="addDropAccount()">
+        ➕ إضافة حساب Dropbox
+      </button>
+
+      <div class="hint" style="margin-bottom:12px;">
+        كل حساب = <strong>2 GB مجاناً</strong> — لو الأول امتلأ بيتحول للثاني تلقائياً.<br>
+        ترتيب الأولوية: الأول ← الثاني ← الثالث…
+      </div>
+
+      <div class="fg">
+        <div class="flabel">مجلد الحفظ (نفسه لكل الحسابات)</div>
+        <input class="field field-full" type="text" id="cfg_folder" value="/videos" dir="ltr">
+      </div>
+    </div>
+  </div>
+
+  <!-- Duration -->
+  <div class="acc open" id="aDur">
+    <div class="acc-head" onclick="tog('aDur')">
+      <div class="acc-hl">⏱️ فلتر المدة <span class="badge ok">شغال</span></div>
+      <div class="acc-arr">▾</div>
+    </div>
+    <div class="acc-body">
+      <div class="flabel">الحد الأقصى للمدة (ثانية)</div>
+      <div class="slider-wrap" style="margin-bottom:5px;">
+        <input class="slider" type="range" id="cfg_dur" min="10" max="600" value="120"
+          oninput="$('durVal').textContent=this.value+'s';updDurHint(this.value)">
+        <div class="slider-val" id="durVal">120s</div>
+      </div>
+      <div class="hint">الحالي: أقل من <strong id="durHint">دقيقتان</strong></div>
+    </div>
+  </div>
+
+  <div class="save-row">
+    <button class="btn btn-ghost btn-sm" onclick="closeCfg()">إلغاء</button>
+    <button class="btn btn-main btn-sm" onclick="saveCfg()">💾 حفظ الإعدادات</button>
+  </div>
+</div>
+</div>
+
+<!-- ══ TEST PANEL ══ -->
+<div class="overlay" id="oTest" onclick="if(event.target===this)closeTest()">
+<div class="panel test-panel">
+  <button class="panel-close" onclick="closeTest()">✕</button>
+  <h2>🧪 اختبار المفاتيح</h2>
+  <p class="sub">فحص شامل لكل مفاتيحك — الحالة، الـ quota المتبقية، وسرعة الاستجابة.</p>
+  <button class="btn btn-main btn-full" id="runTestBtn" onclick="runTests()" style="margin-bottom:18px;">
+    ▶ تشغيل الاختبار الكامل
+  </button>
+  <div id="testSum" style="display:none">
+    <div class="test-sum">
+      <div class="sum-box"><div class="sum-n" id="tTotal">0</div><div class="sum-l">إجمالي</div></div>
+      <div class="sum-box"><div class="sum-n" style="color:var(--ok)" id="tOk">0</div><div class="sum-l">✅ شغال</div></div>
+      <div class="sum-box"><div class="sum-n" style="color:var(--err)" id="tFail">0</div><div class="sum-l">❌ فشل</div></div>
+      <div class="sum-box"><div class="sum-n" style="color:var(--drop2)" id="tMs">—</div><div class="sum-l">avg ms</div></div>
+    </div>
+    <div id="testSug" class="sug"></div>
+  </div>
+  <div id="testResults"></div>
+</div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="wrap">
+  <nav>
+    <div class="logo">
+      <div class="logo-icon">🎵</div>
+      <div class="logo-name">TikSave<sup>Pro</sup></div>
+    </div>
+    <div class="nav-btns">
+      <button class="btn-nav" onclick="openTest()">🧪 اختبار</button>
+      <button class="btn-nav" onclick="openCfg()">
+        <div class="cfg-dot" id="cfgDot"></div>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        الإعدادات
+      </button>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <h1>حمّل فيديوهاتك من<br><em>TikTok</em> إلى Dropbox</h1>
+    <p>أدخل رابط بروفايلك — يجلب فيديوهاتك القصيرة بدون علامة مائية<br>ويرفعها تلقائياً مع تخطي المكرر.</p>
+    <div class="chips">
+      <div class="chip"><b>✓</b> بدون علامة مائية</div>
+      <div class="chip"><b>✓</b> بدون تكرار</div>
+      <div class="chip"><b>✓</b> 3 مصادر مجانية</div>
+      <div class="chip"><b>✓</b> Dropbox تلقائي</div>
+    </div>
+  </div>
+
+  <!-- Dropbox Storage Widget -->
+  <div class="storage-card" id="storageCard">
+    <div class="stor-head">
+      <div class="stor-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        مساحة Dropbox
+      </div>
+      <button class="stor-refresh" id="storRefreshBtn" onclick="loadStorage()" title="تحديث">↻</button>
+    </div>
+    <div id="storageBody">
+      <div class="stor-loading"><div class="spinner"></div> جاري التحميل…</div>
+    </div>
+  </div>
+
+  <div class="notice" id="notice">
+    <span>⚠️</span>
+    <span><strong>الإعدادات ناقصة</strong> — اضغط "الإعدادات" وأدخل مفاتيح RapidAPI وبيانات Dropbox.</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔗 رابط البروفايل</div>
+    <div class="row">
+      <input class="field" type="text" id="profileUrl" placeholder="https://www.tiktok.com/@yourusername">
+      <button class="btn btn-main" id="startBtn" onclick="startProcess()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>ابدأ
+      </button>
+      <button class="btn btn-ghost" id="stopBtn" onclick="stopProcess()" style="display:none;">⏹ إيقاف</button>
+    </div>
+  </div>
+
+  <div class="card prog-wrap" id="progCard">
+    <div class="prog-top">
+      <div class="prog-lbl"><div class="spinner"></div><span id="srcBadge"></span><span id="progLbl">جاري…</span></div>
+      <div class="prog-frac"><span id="doneN">0</span>/<span id="totalN">0</span></div>
+    </div>
+    <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+    <div class="stats">
+      <div class="stat"><div class="stat-n blue" id="sTotal">0</div><div class="stat-l">إجمالي</div></div>
+      <div class="stat"><div class="stat-n green" id="sUp">0</div><div class="stat-l">رُفع ✓</div></div>
+      <div class="stat"><div class="stat-n warn" id="sSkip">0</div><div class="stat-l">مكرر ⟳</div></div>
+      <div class="stat"><div class="stat-n red" id="sFail">0</div><div class="stat-l">فشل ✗</div></div>
+    </div>
+    <div class="cur" id="curFile"></div>
+  </div>
+
+  <div class="card log-wrap" id="logCard">
+    <div class="log-head"><span>📋 السجل</span><span id="logCnt" style="font-family:'JetBrains Mono',monospace;font-size:.7rem;">0</span></div>
+    <div class="log-body" id="logBody"></div>
+  </div>
+
+  <div class="done" id="doneEl">
+    <div class="done-icon">🎉</div>
+    <div class="done-text"><h3>اكتملت العملية!</h3><p id="doneMsg"></p></div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════
+   HELPERS
+══════════════════════════════════ */
+function $(id){ return document.getElementById(id); }
+function enc(s){ return encodeURIComponent(s||''); }
+
+/* ─── fetchT: fetch with hard timeout ──────────────────────── */
+async function fetchT(url, opts, ms){
+  var ctrl = new AbortController();
+  var tid  = setTimeout(function(){ ctrl.abort(); }, ms||35000);
+  try {
+    var r = await fetch(url, Object.assign({signal:ctrl.signal}, opts||{}));
+    clearTimeout(tid); return r;
+  } catch(e) {
+    clearTimeout(tid);
+    if(e.name==='AbortError') throw new Error('⏱ timeout '+Math.round((ms||35000)/1000)+'ث — جرب مرة أخرى');
+    throw e;
+  }
+}
+function yld(){ return new Promise(function(r){ setTimeout(r,0); }); }
+
+/* ─── wakeServer — max 30s total, never blocks forever ──────── */
+var _serverAwake = false;
+async function wakeServer(){
+  if(_serverAwake) return;
+  var deadline = Date.now() + 30000; // 30s max
+  while(Date.now() < deadline){
+    try{
+      var ctrl = new AbortController();
+      var tid  = setTimeout(function(){ ctrl.abort(); }, 5000);
+      var r    = await fetch('/api/ping', {signal:ctrl.signal});
+      clearTimeout(tid);
+      if(r.ok){ _serverAwake=true; return; }
+    }catch(e){}
+    await new Promise(function(res){ setTimeout(res,2000); });
+  }
+  // Proceed anyway even if server didn't respond — let individual calls handle errors
+  _serverAwake=true;
+}
+
+/* ══════════════════════════════════
+   CONFIG
+══════════════════════════════════ */
+var CFG='tiksave_v4';
+function load(){ try{return JSON.parse(localStorage.getItem(CFG)||'{}')}catch{return{}} }
+function save(o){ localStorage.setItem(CFG,JSON.stringify(o)); }
+
+function openCfg(){
+  var c=load();
+  $('cfg_main').value    = c.mainKey   ||'';
+  $('cfg_extra').value   = (c.extraKeys ||[]).join('\n');
+  $('cfg_apify').value   = (c.apifyTokens||[]).join('\n');
+  $('cfg_scraper').value = (c.scraperKeys ||[]).join('\n');
+  $('cfg_bd').value      = (c.bdTokens    ||[]).join('\n');
+  $('cfg_folder').value  = c.folder ||'/videos';
+  renderDropAccounts(c.dropAccounts||[]);
+  var dur=c.maxDur||120;
+  $('cfg_dur').value=dur; $('durVal').textContent=dur+'s'; updDurHint(dur);
+  updBadges(c);
+  // Reset per-account OAuth messages
+  _oauthAccIdx=null; _oauthAccKey=''; _oauthAccSec='';
+  $('oCfg').classList.add('open');
+}
+function closeCfg(){ $('oCfg').classList.remove('open'); }
+
+function saveCfg(){
+  var c={
+    mainKey:     $('cfg_main').value.trim(),
+    extraKeys:   arr($('cfg_extra').value),
+    apifyTokens: arr($('cfg_apify').value),
+    scraperKeys:  arr($('cfg_scraper').value),
+    bdTokens:     arr($('cfg_bd').value),
+    dropAccounts: collectDropAccounts(),
+    folder:       $('cfg_folder').value.trim()||'/videos',
+    maxDur:      parseInt($('cfg_dur').value)||120,
+  };
+  save(c); updBadges(c); updNavDot(c); chkNotice(c); closeCfg();
+  // Refresh storage with new credentials
+  setTimeout(loadStorage, 300);
+}
+function arr(v){ return v.trim().split('\n').map(function(s){return s.trim();}).filter(Boolean); }
+
+function updBadges(c){
+  var rk=c.mainKey?1:0; setBadge('bRapid',rk>0,rk>0?'✓ محفوظ':'غير محفوظ');
+  var das=c.dropAccounts||[]; var dOk=das.filter(function(a){return a.refresh&&a.key&&a.secret;}).length;
+  setBadge('bDrop',dOk>0,dOk>0?'✓ '+dOk+' حساب':'غير متصل');
+  var at=(c.apifyTokens||[]).length; setBadgeNA('bApify',at>0,at>0?'✓ '+at+' token':'اختياري');
+  var sk=(c.scraperKeys||[]).length;  setBadgeNA('bScraper',sk>0,sk>0?'✓ '+sk+' key':'اختياري');
+  var bd=(c.bdTokens   ||[]).length;  setBadgeNA('bBD',     bd>0,bd>0?'✓ '+bd+' token':'اختياري');
+}
+function setBadge(id,ok,txt){var e=$(id);if(!e)return;e.className='badge '+(ok?'ok':'bad');e.textContent=txt;}
+function setBadgeNA(id,ok,txt){var e=$(id);if(!e)return;e.className='badge '+(ok?'ok':'na');e.textContent=txt;}
+function updNavDot(c){
+  var das=c.dropAccounts||[]; var ok=c.mainKey&&das.some(function(a){return a.key&&a.secret&&a.refresh;});
+  $('cfgDot').className='cfg-dot '+(ok?'ready':c.mainKey?'partial':'');
+}
+function chkNotice(c){
+  var das=c.dropAccounts||[]; var ok=c.mainKey&&das.some(function(a){return a.key&&a.secret&&a.refresh;});
+  $('notice').classList.toggle('show',!ok);
+}
+function updDurHint(s){
+  s=parseInt(s);var m=Math.floor(s/60),sec=s%60;
+  $('durHint').textContent=m+'دقيقة'+(sec?' و'+sec+'ثانية':'');
+}
+function tog(id){ $(id).classList.toggle('open'); }
+
+/* ══════════════════════════════════
+   EXPORT / IMPORT SETTINGS (JSON)
+══════════════════════════════════ */
+function cMsg(msg,type){
+  var el=$('cloudMsg'); if(!el) return;
+  el.className='cloud-msg show '+(type||'');
+  el.textContent=msg;
+  if(type==='ok') setTimeout(function(){el.classList.remove('show');},3000);
+}
+
+function collectCurrentConfig(){
+  return {
+    mainKey:      $('cfg_main')    ? $('cfg_main').value.trim()         : (load().mainKey||''),
+    extraKeys:    $('cfg_extra')   ? arr($('cfg_extra').value)           : (load().extraKeys||[]),
+    apifyTokens:  $('cfg_apify')   ? arr($('cfg_apify').value)           : (load().apifyTokens||[]),
+    scraperKeys:  $('cfg_scraper') ? arr($('cfg_scraper').value)         : (load().scraperKeys||[]),
+    bdTokens:     $('cfg_bd')      ? arr($('cfg_bd').value)              : (load().bdTokens||[]),
+    dropAccounts: collectDropAccounts(),
+    folder:       $('cfg_folder')  ? $('cfg_folder').value.trim()       : (load().folder||'/videos'),
+    maxDur:       $('cfg_dur')     ? (parseInt($('cfg_dur').value)||120) : (load().maxDur||120),
+  };
+}
+
+function exportSettings(){
+  var cfg = collectCurrentConfig();
+  // Remove cached space data before export
+  if(cfg.dropAccounts){
+    cfg.dropAccounts = cfg.dropAccounts.map(function(a){
+      var clean = Object.assign({},a); delete clean._space; return clean;
+    });
+  }
+  var json  = JSON.stringify(cfg, null, 2);
+  var blob  = new Blob([json], {type:'application/json'});
+  var url   = URL.createObjectURL(blob);
+  var a     = document.createElement('a');
+  a.href    = url;
+  a.download= 'tiksave-settings.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  cMsg('✅ تم تصدير الإعدادات — احفظ الملف في مكان آمن','ok');
+}
+
+function importSettings(){
+  $('importFileInput').value = '';
+  $('importFileInput').click();
+}
+
+function onImportFile(event){
+  var file = event.target.files[0];
+  if(!file){ return; }
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      var cfg = JSON.parse(e.target.result);
+      // Validate it's a tiksave config
+      if(typeof cfg !== 'object' || Array.isArray(cfg)){
+        cMsg('❌ ملف غير صالح','err'); return;
+      }
+      save(cfg);
+      openCfg(); // reload panel with new values
+      updNavDot(cfg); chkNotice(cfg);
+      setTimeout(loadStorage, 300);
+      cMsg('✅ تم استيراد الإعدادات بنجاح!','ok');
+    }catch(ex){
+      cMsg('❌ خطأ في قراءة الملف: '+ex.message,'err');
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ══════════════════════════════════
+   DROPBOX MULTI-ACCOUNT MANAGEMENT
+══════════════════════════════════ */
+var _oauthAccIdx = null; // which account index is being OAuth'd
+var _oauthAccKey = '';
+var _oauthAccSec = '';
+
+function renderDropAccounts(accounts){
+  var box=$('dropAccountsList');
+  if(!box) return;
+  if(!accounts||!accounts.length){
+    box.innerHTML='<div class="stor-empty" style="margin-bottom:8px;">لا توجد حسابات — اضغط "إضافة حساب" أدناه</div>';
+    return;
+  }
+  box.innerHTML = accounts.map(function(acc,i){
+    var hasToken = !!(acc.key&&acc.secret&&acc.refresh);
+    var spaceHtml = acc._space ? buildMiniSpace(acc._space, i) : (hasToken
+      ? '<div class="drop-space-mini" id="dropSpace_'+i+'">'
+          +'<button class="drop-oauth-btn" style="margin-top:6px;font-size:.7rem;" onclick="checkAccountSpace('+i+')">📊 فحص المساحة</button>'
+        +'</div>'
+      : '');
+    return '<div class="drop-account" id="dropAcc_'+i+'">'
+      +'<div class="drop-account-head">'
+        +'<div class="drop-account-title">📦 حساب '+(i+1)
+          +(hasToken?'<span class="drop-account-badge ok">✓ متصل</span>':'<span class="drop-account-badge na">غير مكتمل</span>')
+        +'</div>'
+        +'<div style="display:flex;gap:5px;">'
+          +(hasToken?'<button class="drop-oauth-btn" style="padding:4px 9px;font-size:.68rem;" onclick="checkAccountSpace('+i+')">📊</button>':'')
+          +'<button class="drop-remove" onclick="removeDropAccount('+i+')" title="حذف">✕</button>'
+        +'</div>'
+      +'</div>'
+      // Mini space bar (shown after check)
+      +'<div id="dropSpace_'+i+'">'+spaceHtml+'</div>'
+      +'<div class="drop-fields">'
+        +'<div class="drop-field-row">'
+          +'<div class="drop-field-lbl">App Key</div>'
+          +'<input class="field field-full" type="text" id="dropKey_'+i+'" value="'+esc(acc.key||'')+'" placeholder="jyu5031…" dir="ltr" oninput="syncDropAccount('+i+')">'
+        +'</div>'
+        +'<div class="drop-field-row">'
+          +'<div class="drop-field-lbl">App Secret</div>'
+          +'<input class="field field-full" type="password" id="dropSec_'+i+'" value="'+esc(acc.secret||'')+'" placeholder="ni1uvt1l…" oninput="syncDropAccount('+i+')">'
+        +'</div>'
+        +'<div class="drop-field-row">'
+          +'<div class="drop-field-lbl">Refresh Token</div>'
+          +'<input class="field field-full" type="password" id="dropRef_'+i+'" value="'+esc(acc.refresh||'')+'" placeholder="sl.u.AGa…">'
+        +'</div>'
+        +'<div class="drop-oauth-row">'
+          +'<button class="drop-oauth-btn" onclick="startOAuthForAccount('+i+')">🔑 إنشاء Refresh Token</button>'
+        +'</div>'
+        +'<div class="drop-oauth-msg" id="dropMsg_'+i+'"></div>'
+        +'<div class="drop-manual-wrap" id="dropManual_'+i+'">'
+          +'<div class="hint" style="margin-bottom:6px;">انسخ الكود من الـ URL بعد الموافقة:<br>'
+            +'<a id="dropLink_'+i+'" href="#" target="_blank" style="color:var(--drop2);font-size:.7rem;">فتح صفحة Dropbox ↗</a>'
+          +'</div>'
+          +'<div class="row">'
+            +'<input class="field" type="text" id="dropCode_'+i+'" placeholder="الصق الكود…" dir="ltr" style="flex:1;font-family:monospace;font-size:.75rem;">'
+            +'<button class="btn btn-main btn-sm" onclick="submitDropCode('+i+')">تأكيد</button>'
+          +'</div>'
+        +'</div>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+}
+
+function buildMiniSpace(d, i){
+  if(!d||d.error) return '<div style="font-size:.7rem;color:var(--tk);padding:4px 0;">❌ فشل تحميل المساحة</div>';
+  var pct=d.pct||0;
+  var barCls=pct>=90?'danger':pct>=70?'warn':'';
+  var freeColor=pct>=90?'var(--tk)':pct>=70?'var(--warn)':'var(--ok)';
+  return '<div class="drop-space-bar" style="margin-bottom:8px;">'
+    +'<div class="drop-space-labels">'
+      +'<span>'+fmtBytes(d.used)+' / '+fmtBytes(d.allocated)+'</span>'
+      +'<span style="color:'+freeColor+';">متبقي: '+fmtBytes(d.free)+'</span>'
+    +'</div>'
+    +'<div class="drop-space-track">'
+      +'<div class="drop-space-fill '+barCls+'" style="width:'+Math.min(100,pct)+'%;"></div>'
+    +'</div>'
+    +(d.file_count!==undefined?'<div style="font-size:.67rem;color:var(--muted);margin-top:3px;">'+d.file_count+' فيديو في '+d.folder+' — حجم '+fmtBytes(d.folder_size)+'</div>':'')
+  +'</div>';
+}
+
+async function checkAccountSpace(i){
+  var c=load();
+  var accounts=c.dropAccounts||[];
+  var acc=accounts[i];
+  if(!acc||!acc.key||!acc.secret||!acc.refresh) return;
+  var box=$('dropSpace_'+i);
+  if(box) box.innerHTML='<div style="font-size:.72rem;color:var(--warn);padding:4px 0;display:flex;align-items:center;gap:6px;"><div class="spinner"></div> جاري فحص المساحة…</div>';
+  try{
+    var r=await fetchT('/api/storage?app_key='+enc(acc.key)+'&app_secret='+enc(acc.secret)+'&refresh_token='+enc(acc.refresh)+'&folder='+enc(c.folder||'/videos'),{},12000);
+    var d=await r.json();
+    // Cache on account object
+    accounts[i]._space=d; c.dropAccounts=accounts; save(c);
+    if(box) box.innerHTML=buildMiniSpace(d, i);
+  }catch(e){
+    if(box) box.innerHTML='<div style="font-size:.7rem;color:var(--tk);padding:4px 0;">❌ '+e.message+'</div>';
+  }
+}
+
+function esc(s){ return String(s).replace(/"/g,'&quot;'); }
+
+function syncDropAccount(i){
+  // ✅ Save key/secret to localStorage on every keystroke
+  var key=$('dropKey_'+i)?$('dropKey_'+i).value.trim():'';
+  var sec=$('dropSec_'+i)?$('dropSec_'+i).value.trim():'';
+  var c=load();
+  var accounts=c.dropAccounts||[];
+  while(accounts.length<=i) accounts.push({key:'',secret:'',refresh:''});
+  if(key) accounts[i].key=key;
+  if(sec) accounts[i].secret=sec;
+  c.dropAccounts=accounts; save(c);
+  // Also keep OAuth vars in sync
+  if(_oauthAccIdx===i){ _oauthAccKey=key; _oauthAccSec=sec; }
+}
+
+function addDropAccount(){
+  var c=load();
+  var accounts=c.dropAccounts||[];
+  accounts.push({key:'',secret:'',refresh:''});
+  c.dropAccounts=accounts; save(c);
+  renderDropAccounts(accounts);
+}
+
+function removeDropAccount(i){
+  var c=load();
+  var accounts=c.dropAccounts||[];
+  accounts.splice(i,1);
+  c.dropAccounts=accounts; save(c);
+  renderDropAccounts(accounts);
+  updBadges(c);
+}
+
+function collectDropAccounts(){
+  var c=load();
+  var accounts=c.dropAccounts||[];
+  return accounts.map(function(acc,i){
+    return {
+      key:     ($('dropKey_'+i)&&$('dropKey_'+i).value.trim())||acc.key||'',
+      secret:  ($('dropSec_'+i)&&$('dropSec_'+i).value.trim())||acc.secret||'',
+      refresh: ($('dropRef_'+i)&&$('dropRef_'+i).value.trim())||acc.refresh||'',
+    };
+  });
+}
+
+function accMsg(i,msg,type){
+  var el=$('dropMsg_'+i); if(!el) return;
+  el.className='drop-oauth-msg show '+(type||'');
+  el.textContent=msg;
+}
+
+function startOAuthForAccount(i){
+  var key=$('dropKey_'+i)?$('dropKey_'+i).value.trim():'';
+  var sec=$('dropSec_'+i)?$('dropSec_'+i).value.trim():'';
+  if(!key){ accMsg(i,'❌ أدخل App Key أولاً','err'); return; }
+  if(!sec){ accMsg(i,'❌ أدخل App Secret أولاً','err'); return; }
+
+  // ✅ Save key/secret immediately so they're not lost
+  var c=load();
+  var accounts=c.dropAccounts||[];
+  while(accounts.length<=i) accounts.push({key:'',secret:'',refresh:''});
+  accounts[i].key    = key;
+  accounts[i].secret = sec;
+  c.dropAccounts=accounts; save(c);
+
+  _oauthAccIdx=i; _oauthAccKey=key; _oauthAccSec=sec;
+
+  var redirect=window.location.origin+'/auth-callback';
+  var url='https://www.dropbox.com/oauth2/authorize?response_type=code'
+    +'&client_id='+enc(key)+'&redirect_uri='+enc(redirect)+'&token_access_type=offline';
+
+  $('dropLink_'+i).href=url;
+  $('dropManual_'+i).className='drop-manual-wrap show';
+  $('dropCode_'+i).value='';
+  accMsg(i,'① افتح رابط Dropbox ② وافق ③ انسخ الكود أدناه','wait');
+
+  // Try popup
+  try{ window.open(url,'dbx_'+i,'width=520,height=660'); }catch(e){}
+
+  // Listen postMessage
+  function onMsg(e){
+    if(!e.data||e.data.type!=='DROPBOX_AUTH_CODE') return;
+    window.removeEventListener('message',onMsg);
+    exchangeDropCode(i,e.data.code,key,sec,redirect);
+  }
+  window.addEventListener('message',onMsg);
+}
+
+function submitDropCode(i){
+  var code=$('dropCode_'+i)?$('dropCode_'+i).value.trim():'';
+  if(!code){ accMsg(i,'❌ الصق الكود أولاً','err'); return; }
+  var key=$('dropKey_'+i)?$('dropKey_'+i).value.trim():'';
+  var sec=$('dropSec_'+i)?$('dropSec_'+i).value.trim():'';
+  var redirect=window.location.origin+'/auth-callback';
+  exchangeDropCode(i,code,key,sec,redirect);
+}
+
+async function exchangeDropCode(i,code,key,sec,redirect){
+  accMsg(i,'⏳ جاري التحقق من الكود…','wait');
+  try{
+    var r=await fetch('/api/token',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({app_key:key,app_secret:sec,code:code,redirect_uri:redirect})});
+    var d=await r.json();
+    if(d.refresh_token){
+      // Update input field
+      if($('dropRef_'+i)) $('dropRef_'+i).value=d.refresh_token;
+
+      // ✅ Read LATEST key/secret from inputs (user may have typed them)
+      var latestKey = ($('dropKey_'+i)&&$('dropKey_'+i).value.trim()) || key;
+      var latestSec = ($('dropSec_'+i)&&$('dropSec_'+i).value.trim()) || sec;
+
+      // ✅ Auto-save immediately — don't wait for "حفظ الإعدادات"
+      var c=load();
+      var accounts=c.dropAccounts||[];
+      // Ensure slot exists
+      while(accounts.length<=i) accounts.push({key:'',secret:'',refresh:''});
+      accounts[i].key     = latestKey;
+      accounts[i].secret  = latestSec;
+      accounts[i].refresh = d.refresh_token;
+      c.dropAccounts=accounts; save(c);
+
+      $('dropManual_'+i).className='drop-manual-wrap';
+      accMsg(i,'✅ تم الاتصال وحُفظ تلقائياً!','ok');
+      renderDropAccounts(accounts);
+      updBadges(c); updNavDot(c); chkNotice(c);
+    } else {
+      accMsg(i,'❌ كود غلط أو منتهي: '+(d.error||'unknown'),'err');
+    }
+  }catch(e){ accMsg(i,'❌ '+e.message,'err'); }
+}
+
+/* ══════════════════════════════════
+   OAUTH — NO PROMPT()
+══════════════════════════════════ */
+
+
+
+/* ══════════════════════════════════
+   LOGGING
+══════════════════════════════════ */
+function log(msg,cls){
+  cls=cls||'';
+  var b=$('logBody'),d=document.createElement('div');
+  d.className='ll '+cls; d.textContent=msg;
+  b.appendChild(d); b.scrollTop=b.scrollHeight;
+  $('logCnt').textContent=b.children.length;
+}
+function resetLog(){ $('logBody').innerHTML=''; $('logCnt').textContent='0'; }
+
+/* ══════════════════════════════════
+   SOURCE BADGE
+══════════════════════════════════ */
+function setSrcBadge(src){
+  var m={rapid:['RapidAPI','src-rapid'],apify:['Apify','src-apify'],scraper:['ScraperAPI','src-scraper'],brightdata:['Bright Data','src-bright']};
+  var p=m[src]||['',''];
+  $('srcBadge').innerHTML=p[0]?'<span class="src-badge '+p[1]+'">'+p[0]+'</span>':'';
+}
+
+/* ══════════════════════════════════
+   STATE
+══════════════════════════════════ */
+var running=false, stopped=false;
+var allKeys=[], keyIndex=0;
+var curSrc=0, apifyIdx=0, scraperIdx=0, bdIdx=0;
+var urlCache={};
+var exhaustedDownloadKeys=new Set(); // keys with 429 on download
+var _dlCircuitOpen = false; // true = stop ALL download attempts this session
+
+function getKey(){ return allKeys.length?allKeys[keyIndex++%allKeys.length]:null; }
+
+/* ══════════════════════════════════
+   FETCH PAGE — ordered source queue
+   RapidAPI → Apify → ScraperAPI → BrightData
+══════════════════════════════════ */
+async function fetchPage(username, cursor){
+  var c   = load();
+  var ats = c.apifyTokens  || [];
+  var sks = c.scraperKeys  || [];
+  var bds = c.bdTokens     || [];
+
+  // ── Build ordered queue of ALL available sources ──────────────
+  // Each entry: { type, key/token, label }
+  var queue = [];
+
+  // 1. RapidAPI keys (already in allKeys global)
+  allKeys.forEach(function(k, i){
+    queue.push({ type:'rapid', key:k, label:'RapidAPI مفتاح '+(i+1) });
+  });
+
+  // 2. Apify tokens
+  ats.forEach(function(t, i){
+    queue.push({ type:'apify', key:t, label:'Apify token '+(i+1) });
+  });
+
+  // 3. ScraperAPI keys
+  sks.forEach(function(k, i){
+    queue.push({ type:'scraper', key:k, label:'ScraperAPI key '+(i+1) });
+  });
+
+  // 4. Bright Data tokens
+  bds.forEach(function(t, i){
+    queue.push({ type:'bright', key:t, label:'BrightData token '+(i+1) });
+  });
+
+  if(!queue.length) throw new Error('لا يوجد مفاتيح — أضف مفتاحاً في الإعدادات');
+
+  // ── Try each source in order ───────────────────────────────────
+  for(var qi = curSrc; qi < queue.length; qi++){
+    var src = queue[qi];
+    log('  🔑 جرب: '+src.label+'…','i');
+    try{
+      var r, d, url;
+
+      if(src.type === 'rapid'){
+        url = '/api/profile?username='+enc(username)+'&rapid_key='+enc(src.key)+'&max_dur='+(c.maxDur||120)+'&cursor='+cursor;
+        r = await fetchT(url, {}, 55000);
+        if(r.status===429||r.status===403){
+          log('  ⚠️ '+src.label+': '+(r.status===429?'quota خلص':'غير مشترك')+' — التالي…','w');
+          curSrc = qi+1; continue;
+        }
+        d = await r.json().catch(function(){ return {error:'parse error'}; });
+        if(d.error){
+          var em = d.error||'';
+          if(em.indexOf('subscri')!==-1||em.indexOf('403')!==-1||em.indexOf('quota')!==-1||em.indexOf('429')!==-1||em.indexOf('Forbidden')!==-1){
+            log('  ⚠️ '+src.label+': '+em.slice(0,60)+' — التالي…','w');
+            curSrc = qi+1; continue;
+          }
+          log('  ⚠️ '+src.label+' خطأ: '+em.slice(0,80),'w');
+          curSrc = qi+1; continue;
+        }
+        var vcount = (d.videos&&d.videos.length)||0;
+        log('  ✅ '+src.label+': '+vcount+' فيديو','s');
+        setSrcBadge('rapid');
+        curSrc = qi; // stay on same source next page
+        return d;
+
+      } else if(src.type === 'apify'){
+        log('  ⏳ Apify بياخد 30-90 ثانية…','i');
+        url = '/api/profile?source=apify&username='+enc(username)+'&apify_token='+enc(src.key)+'&max_dur='+(c.maxDur||120)+'&cursor=0';
+        r = await fetchT(url, {}, 90000);
+        if(r.status===402||r.status===429||r.status===403){
+          log('  ⚠️ '+src.label+': quota/auth — التالي…','w');
+          curSrc = qi+1; continue;
+        }
+        if(!r.ok){ log('  ⚠️ '+src.label+': HTTP '+r.status+' — التالي…','w'); curSrc=qi+1; continue; }
+        d = await r.json();
+        var vcount2 = (d.videos&&d.videos.length)||0;
+        log('  ✅ '+src.label+': '+vcount2+' فيديو','s');
+        setSrcBadge('apify');
+        curSrc = qi+1; // Apify returns all at once, move to next for next call
+        return Object.assign({}, d, {has_more:false});
+
+      } else if(src.type === 'scraper'){
+        url = '/api/profile?source=scraper&username='+enc(username)+'&scraper_key='+enc(src.key)+'&max_dur='+(c.maxDur||120)+'&cursor='+cursor;
+        r = await fetchT(url, {}, 20000);
+        if(r.status===429||r.status===403){
+          log('  ⚠️ '+src.label+': quota خلص — التالي…','w');
+          curSrc = qi+1; continue;
+        }
+        if(!r.ok){ log('  ⚠️ '+src.label+': HTTP '+r.status+' — التالي…','w'); curSrc=qi+1; continue; }
+        d = await r.json();
+        var vcount3 = (d.videos&&d.videos.length)||0;
+        log('  ✅ '+src.label+': '+vcount3+' فيديو','s');
+        setSrcBadge('scraper');
+        curSrc = qi;
+        return d;
+
+      } else if(src.type === 'bright'){
+        url = '/api/profile?source=brightdata&username='+enc(username)+'&bd_token='+enc(src.key)+'&max_dur='+(c.maxDur||120)+'&cursor='+cursor;
+        r = await fetchT(url, {}, 20000);
+        if(r.status===429||r.status===402||r.status===403){
+          log('  ⚠️ '+src.label+': quota/credit — التالي…','w');
+          curSrc = qi+1; continue;
+        }
+        if(!r.ok){ log('  ⚠️ '+src.label+': HTTP '+r.status+' — التالي…','w'); curSrc=qi+1; continue; }
+        d = await r.json();
+        var vcount4 = (d.videos&&d.videos.length)||0;
+        log('  ✅ '+src.label+': '+vcount4+' فيديو','s');
+        setSrcBadge('brightdata');
+        curSrc = qi;
+        return d;
+      }
+
+    } catch(e) {
+      log('  ⚠️ '+src.label+' فشل: '+e.message.slice(0,80)+' — التالي…','w');
+      curSrc = qi+1;
+    }
+  }
+
+  throw new Error('انتهت كل المفاتيح والمصادر — أضف مفاتيح جديدة في الإعدادات');
+}
+
+
+/* ══════════════════════════════════
+   GET DOWNLOAD URL
+══════════════════════════════════ */
+async function getDlUrl(videoId){
+  if(urlCache[videoId]) return urlCache[videoId];
+
+  // Circuit breaker: if all keys 429'd before, skip immediately
+  if(_dlCircuitOpen){
+    return null;
+  }
+
+  var tried=new Set();
+  var keys=allKeys.slice(); // copy
+  while(tried.size < keys.length){
+    var key = keys[keyIndex % keys.length];
+    keyIndex++;
+    if(tried.has(key)) continue;
+    tried.add(key);
+
+    // Skip known-exhausted keys
+    if(exhaustedDownloadKeys.has(key)) continue;
+
+    try{
+      var r = await fetchT('/api/download?video_id='+enc(videoId)+'&rapid_key='+enc(key),{},12000);
+      if(r.status===429||r.status===403){
+        log('  ⚠️ مفتاح download '+(r.status===403?'غير مشترك':'quota خلص')+' ('+key.slice(0,8)+'…)','w');
+        exhaustedDownloadKeys.add(key);
+        // If ALL keys exhausted → open circuit
+        if(exhaustedDownloadKeys.size >= keys.length){
+          _dlCircuitOpen = true;
+          log('  🔴 كل مفاتيح download خلصت — سيتم تخطي باقي الفيديوهات تلقائياً','w');
+        }
+        continue;
+      }
+      var d = await r.json();
+      if(!d || d.error==='all_quota_exceeded'){ exhaustedDownloadKeys.add(key); continue; }
+      if(d.error){ log('  ⚠️ '+d.error.slice(0,60),'w'); continue; }
+      if(d.url){ urlCache[videoId]=d.url; return d.url; }
+    }catch(e){
+      log('  ⚠️ download error: '+e.message.slice(0,60),'w');
+    }
+  }
+  return null;
+}
+
+/* ══════════════════════════════════
+   UPLOAD TO DROPBOX
+══════════════════════════════════ */
+var dropIdx=0; // current active Dropbox account index
+var dropSpaceCache={}; // cache: accIdx → { free, checked_at }
+
+async function getAccountFreeSpace(acc, idx){
+  var c=load();
+  var now=Date.now();
+  // Use cache if checked in last 5 minutes
+  if(dropSpaceCache[idx] && (now-dropSpaceCache[idx].t) < 300000){
+    return dropSpaceCache[idx].free;
+  }
+  try{
+    var r=await fetchT('/api/storage?app_key='+enc(acc.key)+'&app_secret='+enc(acc.secret)+'&refresh_token='+enc(acc.refresh)+'&folder='+enc(c.folder||'/videos'),{},10000);
+    var d=await r.json();
+    if(d.free !== undefined){
+      dropSpaceCache[idx]={free:d.free, pct:d.pct, t:now};
+      return d.free;
+    }
+  }catch(e){}
+  return Infinity; // assume space available if check fails
+}
+
+async function uploadVideo(videoUrl, filename){
+  var c=load();
+  var accounts=(c.dropAccounts||[]).filter(function(a){return a.key&&a.secret&&a.refresh;});
+  if(!accounts.length) throw new Error('لا يوجد حساب Dropbox — أضف حساباً في الإعدادات');
+
+  // Find first account with space (>50MB free)
+  var MIN_FREE = 50 * 1024 * 1024; // 50 MB
+  var startIdx = dropIdx % accounts.length;
+
+  // Check if current account has space, else rotate
+  for(var check=0; check<accounts.length; check++){
+    var checkIdx = (startIdx + check) % accounts.length;
+    var free = await getAccountFreeSpace(accounts[checkIdx], checkIdx);
+    if(free > MIN_FREE){
+      if(checkIdx !== dropIdx % accounts.length){
+        log('📦 التحويل لـ Dropbox حساب '+(checkIdx+1)+' (متبقي '+fmtBytes(free)+'…)','i');
+        dropIdx = checkIdx;
+      }
+      break;
+    } else {
+      log('⚠️ Dropbox حساب '+(checkIdx+1)+' ممتلئ تقريباً (متبقي '+fmtBytes(free)+') — التالي…','w');
+    }
+  }
+
+  // Try upload with rotation on error
+  var tried=0;
+  while(tried < accounts.length){
+    var acc=accounts[dropIdx % accounts.length];
+    try{
+      var r=await fetchT('/api/upload',{method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          video_url:    videoUrl,
+          filename:     filename,
+          drop_folder:  c.folder||'/videos',
+          app_key:      acc.key,
+          app_secret:   acc.secret,
+          refresh_token:acc.refresh,
+        })});
+      var d=await r.json();
+      if(r.status===507||(d.error&&(d.error.indexOf('storage_full')!==-1||d.error.indexOf('storage')!==-1||d.error.indexOf('insufficient')!==-1))){
+        log('⚠️ Dropbox حساب '+(dropIdx%accounts.length+1)+' امتلأ — التحويل للتالي…','w');
+        // Invalidate cache for this account
+        delete dropSpaceCache[dropIdx % accounts.length];
+        dropIdx++; tried++; continue;
+      }
+      if(d.error) throw new Error(d.error);
+      d.dropAccount = (dropIdx % accounts.length) + 1;
+      return d;
+    }catch(e){
+      delete dropSpaceCache[dropIdx % accounts.length];
+      tried++; dropIdx++;
+      if(tried>=accounts.length) throw e;
+      log('⚠️ Dropbox حساب '+(dropIdx%accounts.length+1)+' فشل — التالي…','w');
+    }
+  }
+  throw new Error('كل حسابات Dropbox فشلت أو امتلأت');
+}
+
+/* ══════════════════════════════════
+   MAIN PROCESS
+══════════════════════════════════ */
+function extractUser(url){var m=url.match(/@([\w.]+)/);return m?m[1]:url.replace(/.*tiktok\.com\//,'').replace(/\//,'');}
+
+async function startProcess(){
+  var c=load();
+  var _das=(c.dropAccounts||[]).filter(function(a){return a.key&&a.secret&&a.refresh;});
+  if(!c.mainKey||!_das.length){openCfg();return;}
+  var urlVal=$('profileUrl').value.trim();
+  if(!urlVal.includes('tiktok')){$('profileUrl').classList.add('err');setTimeout(function(){$('profileUrl').classList.remove('err');},600);return;}
+
+  allKeys=[c.mainKey].concat(c.extraKeys||[]).filter(Boolean);
+  keyIndex=0; curSrc=0; apifyIdx=0; scraperIdx=0; bdIdx=0; dropIdx=0;
+  urlCache={}; running=true; stopped=false;
+  exhaustedDownloadKeys=new Set(); _dlCircuitOpen=false; // reset for new run
+  resetLog();
+
+  $('startBtn').disabled=true; $('stopBtn').style.display='inline-flex';
+  $('progCard').classList.add('show'); $('logCard').classList.add('show');
+  $('doneEl').classList.remove('show');
+  $('barFill').style.width='0%';
+  ['sTotal','sUp','sSkip','sFail','doneN','totalN'].forEach(function(id){$(id).textContent='0';});
+
+  // Wake server in background (non-blocking)
+  wakeServer();
+  var username=extractUser(urlVal);
+  log('👤 بروفايل: @'+username,'i');
+
+  try{
+    // ── PHASE 1: Collect ALL videos first ───────────────────────
+    var allVideos=[], cursor=0, hasMore=true, page=0;
+    $('sTotal').textContent=$('totalN').textContent='…';
+    $('progLbl').textContent='جمع الفيديوهات…';
+
+    while(hasMore && !stopped){
+      page++;
+      log('  📄 جمع صفحة '+page+'…','i');
+      var res = await fetchPage(username, cursor);
+      var pageVids = res.videos || [];
+      allVideos = allVideos.concat(pageVids);
+      hasMore = res.has_more || false;
+      cursor  = res.cursor  || 0;
+      if(page >= 50) hasMore = false;
+      log('  📋 صفحة '+page+': '+pageVids.length+' فيديو | الإجمالي: '+allVideos.length,'s');
+      $('sTotal').textContent = $('totalN').textContent = allVideos.length;
+      await yld();
+    }
+
+    if(!allVideos.length){ log('لا توجد فيديوهات','w'); finish(0,0,0); return; }
+    log('✅ تم جمع '+allVideos.length+' فيديو — بدء الرفع…','s');
+
+    // ── PHASE 2: Upload all collected videos ─────────────────────
+    var up=0, skip=0, fail=0;
+    for(var i=0; i<allVideos.length; i++){
+      if(stopped){ log('⏹ توقف','w'); break; }
+      await yld();
+      var v   = allVideos[i];
+      var lbl = '['+(i+1)+'/'+allVideos.length+'] '+(v.title||v.id||'').slice(0,50);
+      var cf  = $('curFile'); cf.textContent=lbl; cf.classList.add('show');
+      $('progLbl').textContent = 'رفع ('+(i+1)+'/'+allVideos.length+')';
+      log('⬆️  '+lbl,'i');
+      try{
+        var dlUrl = v.play_url || '';
+        if(!dlUrl){
+          if(_dlCircuitOpen){
+            skip++; $('sSkip').textContent=skip; continue;
+          }
+          var fetched = await getDlUrl(v.id);
+          if(!fetched){
+            skip++;
+            log('  ⟳ تخطي: لا رابط','w');
+            $('sSkip').textContent=skip;
+            continue;
+          }
+          dlUrl = fetched;
+        }
+        var uploadRes = await uploadVideo(dlUrl, (v.id||(i+1))+'.mp4');
+        if(uploadRes.skipped){
+          skip++; log('  ⟳ مكرر: '+(v.id||(i+1))+'.mp4','w');
+          $('sSkip').textContent=skip;
+        } else {
+          up++; log('  ☁️ رُفع: '+(v.id||(i+1))+'.mp4','s');
+          $('sUp').textContent=up;
+        }
+      }catch(e){
+        fail++; log('  ❌ '+e.message,'e');
+        $('sFail').textContent=fail;
+      }
+      var pct = Math.round((i+1)/allVideos.length*100);
+      $('barFill').style.width=pct+'%';
+      $('doneN').textContent=i+1;
+    }
+    finish(up, skip, fail);
+  }catch(e){ log('💥 '+e.message,'e'); finish(0,0,0); }
+}
+
+function finish(up,skip,fail){
+  // Refresh storage widget after uploads
+  setTimeout(loadStorage, 1500);
+  running=false;
+  $('startBtn').disabled=false; $('stopBtn').style.display='none';
+  $('progLbl').textContent='اكتملت العملية';
+  $('curFile').classList.remove('show');
+  $('barFill').style.width='100%';
+  $('doneEl').classList.add('show');
+  $('doneMsg').textContent='رُفع '+up+' ✓ | مكرر '+skip+' ⟳ | فشل '+fail+' ✗';
+  log('\n🎉 انتهى! رُفع: '+up+' | مكرر: '+skip+' | فشل: '+fail,'s');
+}
+function stopProcess(){ stopped=true; log('⏹ طلب إيقاف…','w'); }
+
+/* ══════════════════════════════════
+   TEST PANEL
+══════════════════════════════════ */
+function openTest(){ $('oTest').classList.add('open'); }
+function closeTest(){ $('oTest').classList.remove('open'); }
+
+async function runTests(){
+  var c=load();
+  var btn=$('runTestBtn');
+  btn.disabled=true; btn.innerHTML='<div class="spinner"></div> جاري الاختبار…';
+  wakeServer(); // non-blocking
+  $('testSum').style.display='none';
+  var box=$('testResults'); box.innerHTML='';
+
+  var body={
+    rapid_keys:       [c.mainKey].concat(c.extraKeys||[]).filter(Boolean),
+    apify_tokens:     c.apifyTokens||[],
+    scraper_keys:     c.scraperKeys||[],
+    brightdata_tokens:c.bdTokens||[],
+    drop_accounts:    (c.dropAccounts||[]).filter(function(a){return a.key&&a.secret&&a.refresh;}),
+  };
+
+  // Show placeholders
+  box.innerHTML=makePlaceholders(body);
+
+  try{
+    // Wake server first, then test keys
+    var r=await fetchT('/api/test_keys',{method:'POST',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify(body)},120000);
+    var data=await r.json();
+    renderResults(data);
+  }catch(e){
+    box.innerHTML='<div class="res-item fail"><div class="res-icon">❌</div><div class="res-body"><div class="res-name">فشل الاتصال</div><div class="res-status">'+e.message+'</div></div></div>';
+  }
+  btn.disabled=false; btn.innerHTML='▶ تشغيل الاختبار مرة أخرى';
+}
+
+function makePlaceholders(b){
+  var h='';
+  if(b.rapid_keys.length){
+    h+='<div class="res-sec"><div class="res-title">🔑 RapidAPI ('+b.rapid_keys.length+')</div>';
+    b.rapid_keys.forEach(function(k){
+      h+='<div class="res-item testing"><div class="res-icon">⏳</div><div class="res-body"><div class="res-name">'+k.slice(0,16)+'…</div><div class="res-status" style="color:var(--warn)">جاري…</div></div></div>';
+    });
+    h+='</div>';
+  }
+  if(b.apify_tokens.length) h+=onePH('🕷️ Apify','Apify Tokens ('+b.apify_tokens.length+')');
+  if(b.scraper_keys.length) h+=onePH('🔧 ScraperAPI','ScraperAPI Keys ('+b.scraper_keys.length+')');
+  if(b.brightdata_tokens&&b.brightdata_tokens.length) h+=onePH('⚡ Bright Data','Bright Data ('+b.brightdata_tokens.length+')');
+  if(b.drop_accounts&&b.drop_accounts.length) h+=onePH('📦 Dropbox','Dropbox ('+b.drop_accounts.length+' حساب)');
+  return h||'<div style="color:var(--muted);font-size:.8rem;text-align:center;padding:20px;">لا توجد مفاتيح محفوظة</div>';
+}
+function onePH(icon,name){
+  return '<div class="res-sec"><div class="res-title">'+icon+'</div><div class="res-item testing"><div class="res-icon">⏳</div><div class="res-body"><div class="res-name">'+name+'</div><div class="res-status" style="color:var(--warn)">جاري…</div></div></div></div>';
+}
+
+function renderResults(data){
+  var box=$('testResults'), html='';
+  var tOk=0,tFail=0,tMs=[],tTotal=0;
+
+  function safeStr(v){ return (v===undefined||v===null)?'—':String(v); }
+
+  function resHtml(icon,title,list){
+    if(!list||!list.length) return '';
+    var s='<div class="res-sec"><div class="res-title">'+icon+' ('+list.length+')</div>';
+    list.forEach(function(res,i){
+      if(!res) return;
+      var cls=res.ok?'ok':'fail'; tTotal++;
+      res.ok?tOk++:tFail++; if(res.ms) tMs.push(res.ms);
+      var name=safeStr(res.key_preview||res.token_preview||title+' #'+(i+1));
+      var status=safeStr(res.status);
+      s+='<div class="res-item '+cls+'">'
+        +'<div class="res-icon">'+(res.ok?'✅':'❌')+'</div>'
+        +'<div class="res-body">'
+        +'<div class="res-name">'+name+'</div>'
+        +'<div class="res-status">'+status+'</div>'
+        +(res.detail?'<div class="res-detail">'+safeStr(res.detail)+'</div>':'')
+        +'</div>'
+        +'<div class="res-ms">'+(res.ms||0)+'ms</div>'
+        +'</div>';
+    });
+    return s+'</div>';
+  }
+
+  html+=resHtml('🔑 RapidAPI','Key',data.rapid||[]);
+  html+=resHtml('🕷️ Apify','Token',data.apify||[]);
+  html+=resHtml('🔧 ScraperAPI','Key',data.scraper||[]);
+  html+=resHtml('⚡ Bright Data','Token',data.brightdata||[]);
+
+  // Dropbox — array of accounts
+  var dbxList=Array.isArray(data.dropbox)?data.dropbox:(data.dropbox?[data.dropbox]:[]);
+  html+=resHtml('📦 Dropbox','حساب',dbxList.map(function(acc,i){
+    return Object.assign({},acc,{
+      key_preview:'حساب '+(acc.account||i+1)+(acc.key_preview?' ('+acc.key_preview+')':''),
+    });
+  }));
+
+  $('testResults').innerHTML=html||'<div style="color:var(--muted);font-size:.8rem;text-align:center;padding:20px;">لا توجد نتائج</div>';
+
+  var avgMs=tMs.length?Math.round(tMs.reduce(function(a,b){return a+b;},0)/tMs.length):0;
+  $('tTotal').textContent=tTotal; $('tOk').textContent=tOk;
+  $('tFail').textContent=tFail; $('tMs').textContent=avgMs?avgMs+'ms':'—';
+  $('testSum').style.display='block';
+
+  // Debug: show Dropbox account data
+  var c2=load();
+  var dbxAccounts=c2.dropAccounts||[];
+  console.log('DEBUG dropAccounts:', JSON.stringify(dbxAccounts.map(function(a){
+    return {key:a.key?a.key.slice(0,8)+'…':'EMPTY', secret:a.secret?'✓':'EMPTY', refresh:a.refresh?a.refresh.slice(0,10)+'…':'EMPTY'};
+  })));
+
+  // Suggestions
+  var sug=$('testSug');
+  var rOk=(data.rapid||[]).filter(function(x){return x.ok;}).length;
+  var rAll=(data.rapid||[]).length;
+  var aOk=(data.apify||[]).filter(function(x){return x.ok;}).length;
+  var sOk=(data.scraper||[]).filter(function(x){return x.ok;}).length;
+  var dOk=(Array.isArray(data.dropbox)?data.dropbox:(data.dropbox?[data.dropbox]:[])).some(function(x){return x&&x.ok;});
+
+  if(tFail===0){
+    sug.className='sug ok-all';
+    sug.innerHTML='<strong>✅ كل حاجة شغالة!</strong> الموقع جاهز للاستخدام الكامل.';
+  } else {
+    var tips=[];
+    if(rOk===0) tips.push('⚠️ مفيش مفاتيح RapidAPI شغالة — أضف مفاتيح جديدة');
+    else if(rOk<rAll) tips.push('ℹ️ '+(rAll-rOk)+' من '+rAll+' مفاتيح RapidAPI quota خلص');
+    if(!aOk&&!(data.apify&&data.apify.length)) tips.push('💡 أضف Apify Token كـ fallback ($5/شهر مجاناً)');
+    if(!sOk&&!(data.scraper&&data.scraper.length)) tips.push('💡 أضف ScraperAPI Key كـ fallback ثاني (1000 req/شهر)');
+    if(!dOk){
+      var dbxAccs=(c2.dropAccounts||[]);
+      if(!dbxAccs.length){
+        tips.push('❌ Dropbox: لم تُضف أي حساب — افتح الإعدادات وأضف حساب Dropbox');
+      } else {
+        var incomplete=dbxAccs.filter(function(a){return !a.key||!a.secret||!a.refresh;});
+        if(incomplete.length){
+          tips.push('❌ Dropbox: '+incomplete.length+' حساب بيانات ناقصة (App Key أو App Secret أو Refresh Token فاضي)');
+        } else {
+          tips.push('❌ Dropbox: credentials خاطئة — Refresh Token منتهي أو App Key/Secret غلط');
+        }
+      }
+    }
+    sug.className='sug';
+    sug.innerHTML='<strong>⚠️ توصيات:</strong><br>'+tips.join('<br>');
+  }
+}
+
+/* ══════════════════════════════════
+   STORAGE WIDGET
+══════════════════════════════════ */
+function fmtBytes(b){
+  if(!b||b===0) return '0 GB';
+  if(b>=1e12) return (b/1e12).toFixed(1)+' TB';
+  if(b>=1e9)  return (b/1e9).toFixed(2)+' GB';
+  if(b>=1e6)  return (b/1e6).toFixed(0)+' MB';
+  return (b/1e3).toFixed(0)+' KB';
+}
+
+async function loadStorage(){
+  var c=load();
+  var das=(c.dropAccounts||[]).filter(function(a){return a.key&&a.secret&&a.refresh;});
+  if(!das.length){
+    $('storageBody').innerHTML='<div class="stor-empty">🔒 أضف حساب Dropbox في الإعدادات أولاً</div>';
+    return;
+  }
+  // spinning icon
+  var btn=$('storRefreshBtn');
+  btn.classList.add('spinning'); btn.disabled=true;
+  $('storageBody').innerHTML='<div class="stor-loading"><div class="spinner"></div> جاري التحميل…</div>';
+
+  try{
+    // Build storage requests for all accounts
+    var storPromises=das.map(function(acc,i){
+      return fetch('/api/storage?app_key='+enc(acc.key)
+        +'&app_secret='+enc(acc.secret)
+        +'&refresh_token='+enc(acc.refresh)
+        +'&folder='+enc(c.folder||'/videos'))
+        .then(function(r){return r.json();})
+        .then(function(d){d._idx=i;return d;})
+        .catch(function(e){return{error:e.message,_idx:i};});
+    });
+    var storResults=await Promise.all(storPromises);
+    var url=''; // not used below — we use storResults directly
+
+    // Render each account's storage
+    var html='';
+    var totalUsed=0, totalAlloc=0, totalFiles=0, totalFolderSize=0;
+    storResults.forEach(function(d,i){
+      if(d.error){
+        html+='<div class="stor-empty" style="margin-bottom:8px;">❌ حساب '+(i+1)+': '+d.error+'</div>';
+        return;
+      }
+      totalUsed+=d.used||0; totalAlloc+=d.allocated||0;
+      totalFiles+=d.file_count||0; totalFolderSize+=d.folder_size||0;
+      var pct=d.pct||0;
+      var barCls=pct>=90?'danger':pct>=70?'warn':'';
+      var isActive=(i===dropIdx%das.length);
+      html+='<div style="margin-bottom:12px;">'
+        +'<div style="font-size:.7rem;font-weight:700;color:var(--muted2);margin-bottom:6px;display:flex;align-items:center;gap:6px;">'
+          +'حساب '+(i+1)
+          +(isActive?'<span style="font-size:.62rem;padding:1px 7px;border-radius:10px;background:rgba(0,97,255,.15);color:var(--drop2);">نشط الآن</span>':'')
+          +(pct>=95?'<span style="font-size:.62rem;padding:1px 7px;border-radius:10px;background:rgba(255,44,85,.12);color:var(--tk);">ممتلئ تقريباً</span>':'')
+        +'</div>'
+        +'<div class="stor-bar-wrap" style="margin-bottom:6px;">'
+          +'<div class="stor-bar-labels"><span>'+fmtBytes(d.used)+'</span><span>'+fmtBytes(d.allocated)+'</span></div>'
+          +'<div class="stor-bar-track"><div class="stor-bar-fill '+barCls+'" style="width:'+Math.min(100,pct)+'%"></div></div>'
+        +'</div>'
+        +'<div style="display:flex;gap:8px;">'
+          +'<div class="stor-box" style="flex:1;"><div class="stor-lbl">متبقي</div><div class="stor-val green">'+fmtBytes(d.free)+'</div></div>'
+          +'<div class="stor-box" style="flex:1;"><div class="stor-lbl">استخدام</div><div class="stor-val '+(pct>=70?'warn':'blue')+'">'+pct+'%</div></div>'
+          +'<div class="stor-box" style="flex:1;"><div class="stor-lbl">فيديوهات</div><div class="stor-val blue">'+d.file_count+'</div></div>'
+        +'</div>'
+      +'</div>';
+    });
+    // Total summary if >1 account
+    if(storResults.length>1 && totalAlloc>0){
+      var totPct=Math.round(totalUsed/totalAlloc*100);
+      html='<div class="stor-box" style="margin-bottom:12px;background:rgba(0,97,255,.06);border:1px solid rgba(0,97,255,.15);">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'
+          +'<div class="stor-lbl" style="color:var(--drop2);font-weight:800;">📊 إجمالي كل الحسابات</div>'
+          +'<div style="font-family:JetBrains Mono,monospace;font-size:.75rem;color:var(--drop2);">'+totPct+'%</div>'
+        +'</div>'
+        +'<div style="font-size:.8rem;color:var(--text);">'+fmtBytes(totalUsed)+' / '+fmtBytes(totalAlloc)
+          +'<span style="color:var(--muted2);font-size:.72rem;"> | '+totalFiles+' فيديو | '+fmtBytes(totalFolderSize)+'</span></div>'
+      +'</div>'+html;
+    }
+    $('storageBody').innerHTML=html||'<div class="stor-empty">لا توجد بيانات</div>';
+
+  }catch(e){
+    $('storageBody').innerHTML='<div class="stor-empty">❌ فشل التحميل: '+e.message+'</div>';
+  }finally{
+    btn.classList.remove('spinning'); btn.disabled=false;
+  }
+}
+
+/* ══════════════════════════════════
+   INIT
+══════════════════════════════════ */
+document.addEventListener('DOMContentLoaded',function(){
+  $('cfg_dur').addEventListener('input',function(){
+    $('durVal').textContent=this.value+'s'; updDurHint(this.value);
+  });
+  var c=load(); updNavDot(c); chkNotice(c);
+  if(c.maxDur){$('cfg_dur').value=c.maxDur;$('durVal').textContent=c.maxDur+'s';updDurHint(c.maxDur);}
+});
+</script>
+</body>
+</html>
